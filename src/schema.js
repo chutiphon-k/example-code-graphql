@@ -26,12 +26,44 @@ const Todo = new GraphQLObjectType({
   })
 })
 
+const Mutation = new GraphQLObjectType({
+  name: "TodoMutations",
+  fields: {
+    createTodo:{
+      type: Todo,
+      description: "Create a new todo items",
+      args: {
+        title: {type: new GraphQLNonNull(GraphQLString)},
+        completed: {type: GraphQLBoolean}
+      },
+      resolve: function(source, {...args}){
+        let todo = args
+        console.log(args)
+        todo._id = "cid-" + Math.ceil(Math.random() * 99999999)
+        if(!todo.completed){
+          todo.completed = false
+        }
+
+        TodosList.push(todo)
+        return todo
+
+      }
+    }
+  }
+})
+
 
 const Query = new GraphQLObjectType({
   name: 'TodoSchema',
   description: 'Root Schema',
   fields: () => ({
     todos: {
+      type: new GraphQLList(Todo),
+      resolve: function () {
+        return TodosList
+      }
+    },
+    todos2: {
       type: new GraphQLList(Todo),
       resolve: function () {
         return TodosList
@@ -43,7 +75,8 @@ const Query = new GraphQLObjectType({
 
 // The Schema
 const Schema = new GraphQLSchema({
-  query: Query
+  query: Query,
+  mutation: Mutation
 });
 
 export default Schema;
